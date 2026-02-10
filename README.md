@@ -1,9 +1,28 @@
 # URL Shortening Service
 
+![Go Version](https://img.shields.io/badge/go-1.25.5-00ADD8?style=flat-square&logo=go)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![CI](https://img.shields.io/badge/ci-not_configured-lightgrey?style=flat-square)
+
 A URL shortening service with a REST API and a CLI.
 
 This repository is part of the roadmap.sh project challenge:
 <https://roadmap.sh/projects/url-shortening-service>
+
+Quick links: [Contributing](CONTRIBUTING.md) · [License](LICENSE)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Challenge Requirements (roadmapsh)](#challenge-requirements-roadmapsh)
+- [Current Implementation Status (this repository)](#current-implementation-status-this-repository)
+- [Tech Stack](#tech-stack)
+- [Configuration](#configuration)
+- [Quickstart](#quickstart)
+- [API (as implemented)](#api-as-implemented)
+- [Examples (cURL)](#examples-curl)
+- [CLI](#cli)
+- [Notes](#notes)
 
 ## Overview
 
