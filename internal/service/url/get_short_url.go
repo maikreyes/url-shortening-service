@@ -1,0 +1,20 @@
+package url
+
+import (
+	"fmt"
+	"url-shortening-service/internal/domain"
+)
+
+func (s *Service) GetShortUrl(shortCode string) (*domain.ApiResponde, error) {
+
+	data, err := s.Repo.FetchData(shortCode)
+
+	if err != nil {
+		return nil, err
+	}
+	if data == nil {
+		return nil, fmt.Errorf("short code %s not found", shortCode)
+	}
+
+	return data, nil
+}
