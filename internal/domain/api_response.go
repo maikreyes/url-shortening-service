@@ -2,7 +2,7 @@ package domain
 
 import "time"
 
-type ApiResponde struct {
+type ApiResponse struct {
 	ID        int       `json:"id"`
 	Url       string    `json:"url"`
 	ShortCode string    `json:"shortCode"`

@@ -18,7 +18,7 @@ func Run() {
 		panic(err)
 	}
 
-	repository := repo.NewRepository(db)
+	repository := repo.NewRepository(db, ctg.Table)
 	repository.Migrate()
 
 	service := service.NewService(repository)

@@ -5,7 +5,7 @@ import (
 	"url-shortening-service/internal/domain"
 )
 
-func (s *Service) GetShortUrl(shortCode string) (*domain.ApiResponde, error) {
+func (s *Service) GetShortUrl(shortCode string) (*domain.ApiResponse, error) {
 
 	data, err := s.Repo.FetchData(shortCode)
 

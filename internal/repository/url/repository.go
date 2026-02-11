@@ -3,13 +3,15 @@ package url
 import "gorm.io/gorm"
 
 type Repository struct {
-	DB *gorm.DB
+	DB        *gorm.DB
+	TableName string
 }
 
-func NewRepository(db *gorm.DB) *Repository {
+func NewRepository(db *gorm.DB, table string) *Repository {
 
 	return &Repository{
-		DB: db,
+		DB:        db,
+		TableName: table,
 	}
 
 }

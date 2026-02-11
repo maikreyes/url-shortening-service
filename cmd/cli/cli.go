@@ -32,7 +32,7 @@ func Run(args []string) {
 		panic(err)
 	}
 
-	repository := repo.NewRepository(db)
+	repository := repo.NewRepository(db, ctg.Table)
 	service := service.NewService(repository)
 	handler := handler.NewHandler(service, ctg.Host, ctg.Port)
 

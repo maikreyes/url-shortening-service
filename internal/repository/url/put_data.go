@@ -7,8 +7,8 @@ import (
 
 func (r *Repository) PutData(shortCode string, newUrl string, newShort string) error {
 
-	err := r.DB.Table("urls").
-		Model(domain.ApiResponde{}).
+	err := r.DB.Table(r.TableName).
+		Model(domain.ApiResponse{}).
 		Where("short_code = ?", shortCode).
 		Updates(map[string]interface{}{
 			"url":        newUrl,

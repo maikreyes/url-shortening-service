@@ -11,6 +11,7 @@ import (
 )
 
 func Connection(DSN string) (*gorm.DB, error) {
+
 	gormLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{

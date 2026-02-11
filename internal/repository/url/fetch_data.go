@@ -8,12 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func (r *Repository) FetchData(shortCode string) (*domain.ApiResponde, error) {
+func (r *Repository) FetchData(shortCode string) (*domain.ApiResponse, error) {
 
-	var url domain.ApiResponde
+	var url domain.ApiResponse
 
 	err := r.DB.
-		Table("urls").
+		Table(r.TableName).
 		Where("short_code = ?", shortCode).
 		First(&url).
 		Error

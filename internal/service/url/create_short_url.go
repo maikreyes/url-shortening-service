@@ -6,6 +6,7 @@ import (
 )
 
 func (s *Service) CreateShortUrl(url string) (string, error) {
+
 	normalized := normalizeURL(url)
 	shortcode := s.generateShortCode(normalized)
 
@@ -18,7 +19,7 @@ func (s *Service) CreateShortUrl(url string) (string, error) {
 		return existing.ShortCode, nil
 	}
 
-	u := domain.ApiResponde{
+	u := domain.ApiResponse{
 		Url:       normalized,
 		ShortCode: shortcode,
 		CreatedAt: time.Now(),
