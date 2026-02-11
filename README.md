@@ -28,6 +28,8 @@ Quick links: [Contributing](CONTRIBUTING.md) · [License](LICENSE)
 
 The service lets you create short codes for long URLs and later resolve them back. It also supports updating and deleting existing short URLs.
 
+Additionally, the same storage can be used to save a Discord webhook URL and expose a GitHub-compatible webhook endpoint that relays selected GitHub events to Discord.
+
 ## Challenge Requirements (roadmap.sh)
 
 The challenge asks for a RESTful API that supports:
@@ -123,6 +125,7 @@ Implemented:
 
 - Create / retrieve / update / delete short URLs
 - Redirect from a short code to the original URL
+- GitHub webhook endpoint that relays GitHub events to Discord (using a stored Discord webhook URL)
 
 Not implemented yet (gap vs. challenge):
 
@@ -148,6 +151,7 @@ Environment variables (see `.env`):
 - `CONNECTION_STRING`: MySQL DSN
 - `HOST`: server host (e.g., `localhost`)
 - `PORT`: server port (e.g., `8080`)
+- `TABLE_NAME`: table used by the repository (default in this repo: `api_responses`)
 
 Example:
 
@@ -155,6 +159,7 @@ Example:
 CONNECTION_STRING="user:pass@tcp(127.0.0.1:3306)/UrlShorteningService?parseTime=true"
 HOST="localhost"
 PORT="8080"
+TABLE_NAME="api_responses"
 ```
 
 ## Quickstart
@@ -167,7 +172,9 @@ PORT="8080"
 go run ./cmd api
 ```
 
-The service starts at `http://HOST:PORT` and creates the `urls` table if it does not exist.
+The service starts at `http://HOST:PORT` and performs a basic migration on startup (creates the `api_responses` table if it does not exist).
+
+Note: `TABLE_NAME` is required. The migration creates the table specified by `TABLE_NAME` if it does not exist.
 
 ## API (as implemented)
 
@@ -175,16 +182,24 @@ Base:
 
 - CRUD endpoints: `/api/v1`
 - Redirect endpoint: `/` (root)
+- GitHub webhook relay endpoint: `/` (root)
 
 ### Redirect
 
 - `GET /:code` → redirects to the original URL (HTTP `301 Moved Permanently`).
 
+### Health
+
+- `GET /api/v1/` → returns a simple JSON message.
+
 ### CRUD
 
 - `POST /api/v1/shorten`
   - Input: Header `url: <url>`
+  - Optional: Header `webhook: true|false`
   - Output: `201 Created` with `{ "url": "<shortCode>" }`
+  - If `webhook: true`, the response becomes `{ "url": "<shortCode>/webhook" }`
+    (note: this is a path suffix, not a fully-qualified URL).
 
 - `GET /api/v1/shorten/:code`
   - Output: `200 OK` with `{ id, url, shortCode, createdAt, updatedAt }`
@@ -192,9 +207,34 @@ Base:
 - `PUT /api/v1/shorten/:code`
   - Input: Header `url: <new_url>`
   - Output: `200 OK` with a message containing the new short code
+  - Note: the current implementation does not validate that `:code` existed before updating.
 
 - `DELETE /api/v1/shorten/:code`
   - Output: `200 OK` with a message
+  - Note: the current implementation does not validate that `:code` existed before deleting.
+
+### GitHub → Discord webhook relay
+
+This repository also includes a simple webhook relay:
+
+1) Store a Discord webhook URL by creating a short code with `webhook: true`.
+2) GitHub sends events to `POST /:code/webhook`.
+3) The service converts the GitHub event into a Discord embed and posts it to the stored Discord webhook URL.
+
+Endpoint:
+
+- `POST /:code/webhook`
+  - Requires header: `X-GitHub-Event: <event>`
+  - Body: GitHub JSON payload (the handler extracts a few fields)
+  - Response: `200 OK` with `{ "status": "sent" }` (or an error JSON)
+
+Supported events (`X-GitHub-Event`):
+
+- `ping`
+- `issues`
+- `create` (branch created)
+- `push`
+- `pull_request`
 
 ## Examples (cURL)
 
@@ -206,6 +246,19 @@ curl -i -X POST \
   http://localhost:8080/api/v1/shorten
 ```
 
+Create a GitHub webhook relay (store a Discord webhook URL):
+
+```bash
+curl -i -X POST \
+  -H 'url: https://discord.com/api/webhooks/XXX/YYY' \
+  -H 'webhook: true' \
+  http://localhost:8080/api/v1/shorten
+```
+
+Then configure GitHub to send webhooks to:
+
+- `http://localhost:8080/<code>/webhook`
+
 Retrieve:
 
 ```bash
@@ -216,6 +269,16 @@ Redirect:
 
 ```bash
 curl -i http://localhost:8080/abc123
+```
+
+Manually test the webhook endpoint (example `ping` event):
+
+```bash
+curl -i -X POST \
+  -H 'X-GitHub-Event: ping' \
+  -H 'Content-Type: application/json' \
+  -d '{"repository":{"name":"demo"},"sender":{"login":"octocat"}}' \
+  http://localhost:8080/<code>/webhook
 ```
 
 Update:
@@ -246,4 +309,7 @@ go run ./cmd cli delete -code abc123
 ## Notes
 
 - Short code generation is currently deterministic (SHA-256 + Base62, length 7). The same normalized URL produces the same short code.
+- URL normalization adds `https://` when the scheme is missing.
 - When redirecting, if the stored URL has no scheme, the server assumes `https://`.
+- The database table used by the repository is configured via `TABLE_NAME` (the default `.env` uses `api_responses`).
+- The database table used by the repository is configured via `TABLE_NAME` (the default `.env` uses `api_responses`). `TABLE_NAME` is required.

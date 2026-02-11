@@ -3,16 +3,20 @@ package router
 import (
 	"fmt"
 	"net/http"
-	handler "url-shortening-service/cmd/api/Handler"
+	github "url-shortening-service/cmd/api/Handler/Github"
+	handler "url-shortening-service/cmd/api/Handler/urls"
 
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(addr string, handler *handler.Handler) {
+func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanlder) {
 	r := gin.Default()
 
 	r.GET("/:code", func(ctx *gin.Context) {
 		handler.Redirect(ctx)
+	})
+	r.POST(("/:code/webhook"), func(ctx *gin.Context) {
+		GithubHandler.WebHookHandler(ctx)
 	})
 
 	api := r.Group("/api")

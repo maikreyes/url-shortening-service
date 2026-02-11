@@ -1,15 +1,21 @@
 package url
 
-import "url-shortening-service/internal/domain"
+import (
+	"strings"
+	"url-shortening-service/internal/domain"
+)
 
 func (r *Repository) Migrate() {
+	table := strings.TrimSpace(r.TableName)
+	if table == "" {
+		panic("TABLE_NAME is required")
+	}
 
-	migrator := r.DB.Migrator()
-	if migrator.HasTable(&domain.ApiResponse{}) {
+	if r.DB.Migrator().HasTable(table) {
 		return
 	}
 
-	if err := migrator.CreateTable(&domain.ApiResponse{}); err != nil {
+	if err := r.DB.Table(table).AutoMigrate(&domain.ApiResponse{}); err != nil {
 		panic(err)
 	}
 }

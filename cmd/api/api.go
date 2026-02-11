@@ -1,10 +1,12 @@
 package api
 
 import (
-	handler "url-shortening-service/cmd/api/Handler"
+	github "url-shortening-service/cmd/api/Handler/Github"
+	handler "url-shortening-service/cmd/api/Handler/urls"
 	"url-shortening-service/cmd/api/router"
 	"url-shortening-service/internal/config"
 	repo "url-shortening-service/internal/repository/url"
+	githubService "url-shortening-service/internal/service/github"
 	service "url-shortening-service/internal/service/url"
 )
 
@@ -24,8 +26,11 @@ func Run() {
 	service := service.NewService(repository)
 	handler := handler.NewHandler(service)
 
+	githubService := githubService.NewService(repository)
+	GithubHandler := github.NewHandler(githubService)
+
 	addr := ctg.Host + ":" + ctg.Port
 
-	router.NewRouter(addr, handler)
+	router.NewRouter(addr, handler, GithubHandler)
 
 }
