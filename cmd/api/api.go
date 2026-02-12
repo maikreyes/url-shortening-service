@@ -4,10 +4,10 @@ import (
 	github "url-shortening-service/cmd/api/Handler/Github"
 	handler "url-shortening-service/cmd/api/Handler/urls"
 	"url-shortening-service/cmd/api/router"
-	"url-shortening-service/internal/config"
-	repo "url-shortening-service/internal/repository/url"
-	githubService "url-shortening-service/internal/service/github"
-	service "url-shortening-service/internal/service/url"
+	"url-shortening-service/pkg/config"
+	repo "url-shortening-service/pkg/repository/url"
+	githubService "url-shortening-service/pkg/service/github"
+	service "url-shortening-service/pkg/service/url"
 )
 
 func Run() {

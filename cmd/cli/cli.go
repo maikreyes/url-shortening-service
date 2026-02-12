@@ -3,9 +3,9 @@ package cli
 import (
 	"flag"
 	handler "url-shortening-service/cmd/cli/Handler"
-	"url-shortening-service/internal/config"
-	repo "url-shortening-service/internal/repository/url"
-	service "url-shortening-service/internal/service/url"
+	"url-shortening-service/pkg/config"
+	repo "url-shortening-service/pkg/repository/url"
+	service "url-shortening-service/pkg/service/url"
 )
 
 func Run(args []string) {

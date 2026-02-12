@@ -1,6 +1,6 @@
 package github
 
-import "url-shortening-service/internal/ports"
+import "url-shortening-service/pkg/ports"
 
 type Hanlder struct {
 	Service ports.GithubService

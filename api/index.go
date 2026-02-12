@@ -7,10 +7,10 @@ import (
 	githubHandler "url-shortening-service/cmd/api/Handler/Github"
 	urlsHandler "url-shortening-service/cmd/api/Handler/urls"
 	"url-shortening-service/cmd/api/router"
-	"url-shortening-service/internal/config"
-	repo "url-shortening-service/internal/repository/url"
-	githubService "url-shortening-service/internal/service/github"
-	urlService "url-shortening-service/internal/service/url"
+	"url-shortening-service/pkg/config"
+	repo "url-shortening-service/pkg/repository/url"
+	githubService "url-shortening-service/pkg/service/github"
+	urlService "url-shortening-service/pkg/service/url"
 )
 
 var (

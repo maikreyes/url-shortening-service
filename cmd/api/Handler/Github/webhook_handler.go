@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"url-shortening-service/internal/domain"
+	"url-shortening-service/pkg/domain"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,6 +1,6 @@
 package handler
 
-import "url-shortening-service/internal/ports"
+import "url-shortening-service/pkg/ports"
 
 type Handler struct {
 	Service ports.UrlService

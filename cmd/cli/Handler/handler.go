@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"url-shortening-service/internal/ports"
+	"url-shortening-service/pkg/ports"
 )
 
 type Handler struct {
