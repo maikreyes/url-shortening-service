@@ -32,12 +32,20 @@ func Run() {
 	var addr string
 
 	if ctg.Environment == "production" {
-		addr = ctg.Host
+		// En producción normalmente el provider expone solo PORT.
+		// Si HOST viene vacío, escuchamos en todas las interfaces.
+		if ctg.Port != "" {
+			addr = ":" + ctg.Port
+		} else {
+			addr = ctg.Host
+		}
 	} else {
-		addr = ctg.Host + ":" + ctg.Port
+		if ctg.Host == "" {
+			addr = ":" + ctg.Port
+		} else {
+			addr = ctg.Host + ":" + ctg.Port
+		}
 	}
-
-	addr = ctg.Host + ":" + ctg.Port
 
 	router.NewRouter(addr, handler, GithubHandler)
 

@@ -10,6 +10,14 @@ import (
 )
 
 func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanlder) {
+	r := BuildRouter(handler, GithubHandler)
+
+	fmt.Printf("Server run on: %s", addr)
+
+	_ = r.Run(addr)
+}
+
+func BuildRouter(handler *handler.Handler, GithubHandler *github.Hanlder) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/", func(ctx *gin.Context) {
@@ -52,7 +60,5 @@ func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanl
 		handler.GetStats(ctx)
 	})
 
-	fmt.Printf("Server run on: %s", addr)
-
-	r.Run(addr)
+	return r
 }
