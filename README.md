@@ -1,5 +1,7 @@
 # URL Shortening Service
 
+Read this in: **English** · [Español](README.es.md)
+
 ![Go Version](https://img.shields.io/badge/go-1.25.5-00ADD8?style=flat-square&logo=go)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![CI](https://img.shields.io/badge/ci-not_configured-lightgrey?style=flat-square)
@@ -141,14 +143,15 @@ Also note these behavioral differences vs. the challenge spec:
 
 - Go
 - Gin (HTTP)
-- GORM + MySQL
+- GORM + MySQL / Postgres
 - `.env` loading via `godotenv`
 
 ## Configuration
 
 Environment variables (see `.env`):
 
-- `CONNECTION_STRING`: MySQL DSN
+- `CONNECTION_STRING`: DSN for the selected driver
+- `DB_DRIVER`: database driver (`mysql` or `postgres`)
 - `HOST`: server host (e.g., `localhost`)
 - `PORT`: server port (e.g., `8080`)
 - `TABLE_NAME`: table used by the repository (default in this repo: `api_responses`)
@@ -156,7 +159,18 @@ Environment variables (see `.env`):
 Example:
 
 ```dotenv
+DB_DRIVER="mysql"
 CONNECTION_STRING="user:pass@tcp(127.0.0.1:3306)/UrlShorteningService?parseTime=true"
+HOST="localhost"
+PORT="8080"
+TABLE_NAME="api_responses"
+```
+
+Postgres example:
+
+```dotenv
+DB_DRIVER="postgres"
+CONNECTION_STRING="host=127.0.0.1 user=postgres password=postgres dbname=UrlShorteningService port=5432 sslmode=disable"
 HOST="localhost"
 PORT="8080"
 TABLE_NAME="api_responses"
@@ -164,7 +178,7 @@ TABLE_NAME="api_responses"
 
 ## Quickstart
 
-1) Start MySQL (and create the database if needed).
+1) Start MySQL or Postgres (and create the database if needed).
 2) Configure `.env`.
 3) Run the API:
 
@@ -174,7 +188,10 @@ go run ./cmd api
 
 The service starts at `http://HOST:PORT` and performs a basic migration on startup (creates the `api_responses` table if it does not exist).
 
-Note: `TABLE_NAME` is required. The migration creates the table specified by `TABLE_NAME` if it does not exist.
+Notes:
+
+- `DB_DRIVER` is required (`mysql` or `postgres`).
+- `TABLE_NAME` is required. The migration creates the table specified by `TABLE_NAME` if it does not exist.
 
 ## API (as implemented)
 
@@ -200,6 +217,8 @@ Base:
   - Output: `201 Created` with `{ "url": "<shortCode>" }`
   - If `webhook: true`, the response becomes `{ "url": "<shortCode>/webhook" }`
     (note: this is a path suffix, not a fully-qualified URL).
+
+  Note: if `webhook` is present, it must be a valid boolean (`true`/`false`).
 
 - `GET /api/v1/shorten/:code`
   - Output: `200 OK` with `{ id, url, shortCode, createdAt, updatedAt }`
@@ -311,5 +330,5 @@ go run ./cmd cli delete -code abc123
 - Short code generation is currently deterministic (SHA-256 + Base62, length 7). The same normalized URL produces the same short code.
 - URL normalization adds `https://` when the scheme is missing.
 - When redirecting, if the stored URL has no scheme, the server assumes `https://`.
-- The database table used by the repository is configured via `TABLE_NAME` (the default `.env` uses `api_responses`).
 - The database table used by the repository is configured via `TABLE_NAME` (the default `.env` uses `api_responses`). `TABLE_NAME` is required.
+- The database driver is selected via `DB_DRIVER` (`mysql` or `postgres`).
