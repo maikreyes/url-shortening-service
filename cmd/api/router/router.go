@@ -12,6 +12,12 @@ import (
 func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanlder) {
 	r := gin.Default()
 
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "Bienvenido",
+		})
+	})
+
 	r.GET("/:code", func(ctx *gin.Context) {
 		handler.Redirect(ctx)
 	})
