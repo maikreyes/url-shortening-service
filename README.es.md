@@ -127,11 +127,9 @@ Implementado:
 
 - Crear / obtener / actualizar / eliminar URLs cortas
 - Redirección desde un código corto hacia la URL original
+- Contador de accesos (incrementa `accessCount` al redirigir)
+- Endpoint de estadísticas (`/api/v2/shorten/:code/stats`) que retorna `accessCount`
 - Endpoint webhook de GitHub que reenvía eventos de GitHub hacia Discord (usando una URL de webhook de Discord almacenada)
-
-Aún no implementado (brecha vs. el reto):
-
-- Endpoint de estadísticas (`/shorten/:code/stats`) y contador de accesos
 
 Diferencias de comportamiento vs. el reto:
 
@@ -203,7 +201,8 @@ Base:
 
 ### Redirección
 
-- `GET /:code` → redirige a la URL original (HTTP `301 Moved Permanently`).
+- `GET /:code` → redirige a la URL original (HTTP `301 Moved Permanently`) e incrementa `accessCount`.
+  Nota: `301` puede quedar en caché en el navegador; para probar múltiples accesos, usa `curl` o una ventana privada.
 
 ### Health
 
@@ -287,6 +286,12 @@ Redirección:
 
 ```bash
 curl -i http://localhost:8080/abc123
+```
+
+Estadísticas:
+
+```bash
+curl -i http://localhost:8080/api/v2/shorten/abc123/stats
 ```
 
 Probar manualmente el endpoint webhook (ejemplo de evento `ping`):
