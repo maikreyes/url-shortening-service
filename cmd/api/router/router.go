@@ -21,10 +21,11 @@ func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanl
 
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
+	v2 := api.Group("/v2")
 
 	v1.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "Holaaaa",
+			"message": "Welcome to triggerito API",
 		})
 	})
 
@@ -39,6 +40,10 @@ func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanl
 	})
 	v1.DELETE("/shorten/:code", func(ctx *gin.Context) {
 		handler.DeleteData(ctx)
+	})
+
+	v2.GET("/shorten/:code/stats", func(ctx *gin.Context) {
+		handler.GetStats(ctx)
 	})
 
 	fmt.Printf("Server run on: %s", addr)

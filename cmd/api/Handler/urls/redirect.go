@@ -10,6 +10,7 @@ import (
 func (h *Handler) Redirect(ctx *gin.Context) {
 	code := ctx.Param("code")
 	data, err := h.Service.GetShortUrl(code)
+
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"message": "code not found",
@@ -24,6 +25,16 @@ func (h *Handler) Redirect(ctx *gin.Context) {
 		})
 		return
 	}
+
+	err = h.Service.AddCount(*data)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "could not update count",
+		})
+		return
+	}
+
 	if strings.HasPrefix(target, "//") {
 		target = "https:" + target
 	} else if !strings.Contains(target, "://") {
