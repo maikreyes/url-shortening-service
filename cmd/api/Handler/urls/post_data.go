@@ -9,6 +9,7 @@ import (
 )
 
 func (h *Handler) PostData(ctx *gin.Context) {
+
 	rawURL := strings.TrimSpace(ctx.GetHeader("url"))
 	webhookHeader := strings.TrimSpace(ctx.GetHeader("webhook"))
 
