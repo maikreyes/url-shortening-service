@@ -29,7 +29,15 @@ func Run() {
 	githubService := githubService.NewService(repository)
 	GithubHandler := github.NewHandler(githubService)
 
-	addr := ctg.Host + ":" + ctg.Port
+	var addr string
+
+	if ctg.Environment == "production" {
+		addr = ctg.Host
+	} else {
+		addr = ctg.Host + ":" + ctg.Port
+	}
+
+	addr = ctg.Host + ":" + ctg.Port
 
 	router.NewRouter(addr, handler, GithubHandler)
 
