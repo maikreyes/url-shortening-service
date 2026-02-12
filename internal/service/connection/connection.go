@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -36,7 +37,7 @@ func (s *Service) NewConnection(driver string, dsn string) (*gorm.DB, error) {
 			DSN: dsn,
 		}), &gorm.Config{Logger: gormLogger})
 	default:
-		return nil, nil
+		return nil, fmt.Errorf("unsupported DB_DRIVER: %q", driver)
 	}
 
 	if err != nil {

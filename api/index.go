@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	githubHandler "url-shortening-service/cmd/api/Handler/Github"
@@ -20,11 +23,35 @@ var (
 )
 
 func initServer() {
+	defer func() {
+		if r := recover(); r != nil {
+			initErr = fmt.Errorf("init panic: %v", r)
+			log.Printf("[vercel] initServer panic: %v", r)
+		}
+	}()
+
 	ctg := config.LoadConfig()
+
+	if strings.TrimSpace(ctg.Driver) == "" {
+		initErr = fmt.Errorf("missing env var DB_DRIVER")
+		log.Printf("[vercel] initServer error: %v", initErr)
+		return
+	}
+	if strings.TrimSpace(ctg.DSN) == "" {
+		initErr = fmt.Errorf("missing env var CONNECTION_STRING")
+		log.Printf("[vercel] initServer error: %v", initErr)
+		return
+	}
+	if strings.TrimSpace(ctg.Table) == "" {
+		initErr = fmt.Errorf("missing env var TABLE_NAME")
+		log.Printf("[vercel] initServer error: %v", initErr)
+		return
+	}
 
 	db, err := repo.Connection(ctg.DSN, ctg.Driver)
 	if err != nil {
 		initErr = err
+		log.Printf("[vercel] initServer DB connection error: %v", err)
 		return
 	}
 
