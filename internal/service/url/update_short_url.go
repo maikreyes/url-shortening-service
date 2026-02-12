@@ -2,7 +2,7 @@ package url
 
 func (s *Service) UpdateShortUrl(shortCode string, newUrl string) (string, error) {
 	normalized := normalizeURL(newUrl)
-	newShort := s.generateShortCode(normalized)
+	newShort := s.GenerateShortCode(normalized)
 
 	err := s.Repo.PutData(shortCode, normalized, newShort)
 

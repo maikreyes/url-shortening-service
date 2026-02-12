@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 )
 
-func (s *Service) generateShortCode(url string) string {
+func (s *Service) GenerateShortCode(url string) string {
 
 	h := sha256.Sum256([]byte(url))
 

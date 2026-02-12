@@ -8,7 +8,7 @@ import (
 func (s *Service) CreateShortUrl(url string) (string, error) {
 
 	normalized := normalizeURL(url)
-	shortcode := s.generateShortCode(normalized)
+	shortcode := s.GenerateShortCode(normalized)
 
 	existing, err := s.Repo.FetchData(shortcode)
 	if err != nil {

@@ -14,7 +14,7 @@ func Run() {
 
 	ctg := config.LoadConfig()
 
-	db, err := repo.Connection(ctg.DSN)
+	db, err := repo.Connection(ctg.DSN, ctg.Driver)
 
 	if err != nil {
 		panic(err)
