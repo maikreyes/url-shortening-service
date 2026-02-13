@@ -21,6 +21,7 @@ Quick links: [Contributing](CONTRIBUTING.md) · [License](LICENSE)
 - [Tech Stack](#tech-stack)
 - [Configuration](#configuration)
 - [Quickstart](#quickstart)
+- [Deploy to Vercel](#deploy-to-vercel)
 - [API (as implemented)](#api-as-implemented)
 - [Examples (cURL)](#examples-curl)
 - [CLI](#cli)
@@ -153,6 +154,12 @@ Environment variables (see `.env`):
 - `HOST`: server host (e.g., `localhost`)
 - `PORT`: server port (e.g., `8080`)
 - `TABLE_NAME`: table used by the repository (default in this repo: `api_responses`)
+- `ENVIRONMENT`: set to `production` to use production-friendly defaults
+
+Notes:
+
+- When deploying to Vercel, do not use `127.0.0.1` / `localhost` in `CONNECTION_STRING`. Use a managed database reachable from Vercel.
+- In Vercel Serverless Functions you typically do not need `HOST`/`PORT` (requests are handled by the platform).
 
 Example:
 
@@ -190,6 +197,30 @@ Notes:
 
 - `DB_DRIVER` is required (`mysql` or `postgres`).
 - `TABLE_NAME` is required. The migration creates the table specified by `TABLE_NAME` if it does not exist.
+
+## Deploy to Vercel
+
+This project can run on Vercel using Go Serverless Functions.
+
+How it works:
+
+- The function entrypoint is in `api/index.go`.
+- All routes are rewritten to the function via `vercel.json` (it preserves the original path via `?path=...`).
+- The HTTP router is built without binding to a port (see `cmd/api/router/router.go`).
+
+Steps:
+
+1) In Vercel Dashboard → Project → Settings → Environment Variables, configure:
+
+- `DB_DRIVER` (`mysql` or `postgres`)
+- `CONNECTION_STRING` (a remote DSN; do not use `127.0.0.1`)
+- `TABLE_NAME`
+
+2) Deploy.
+
+Implementation note:
+
+- Vercel's Go build wraps the function, which makes Go's `internal/` import rules inconvenient for serverless builds. For this reason, the reusable code is also available under `pkg/`.
 
 ## API (as implemented)
 

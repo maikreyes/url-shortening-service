@@ -21,6 +21,7 @@ Enlaces rápidos: [Contributing](CONTRIBUTING.md) · [License](LICENSE)
 - [Stack tecnológico](#stack-tecnológico)
 - [Configuración](#configuración)
 - [Inicio rápido](#inicio-rápido)
+- [Deploy en Vercel](#deploy-en-vercel)
 - [API (tal como está implementada)](#api-tal-como-está-implementada)
 - [Ejemplos (cURL)](#ejemplos-curl)
 - [CLI](#cli)
@@ -153,6 +154,12 @@ Variables de entorno (ver `.env`):
 - `HOST`: host del servidor (ej. `localhost`)
 - `PORT`: puerto del servidor (ej. `8080`)
 - `TABLE_NAME`: tabla usada por el repositorio (por defecto en este repo: `api_responses`)
+- `ENVIRONMENT`: usa `production` para defaults más amigables a producción
+
+Notas:
+
+- Para desplegar en Vercel, no uses `127.0.0.1` / `localhost` en `CONNECTION_STRING`. Usa una base de datos administrada accesible desde Vercel.
+- En Serverless Functions de Vercel normalmente no necesitas `HOST`/`PORT` (las requests las maneja la plataforma).
 
 Ejemplo (MySQL):
 
@@ -190,6 +197,30 @@ Notas:
 
 - `DB_DRIVER` es requerido (`mysql` o `postgres`).
 - `TABLE_NAME` es requerido. La migración crea la tabla especificada por `TABLE_NAME` si no existe.
+
+## Deploy en Vercel
+
+Este proyecto puede correr en Vercel usando Go Serverless Functions.
+
+Cómo funciona:
+
+- El entrypoint de la función está en `api/index.go`.
+- Todas las rutas se reescriben a la función vía `vercel.json` (preserva el path original usando `?path=...`).
+- El router HTTP se construye sin abrir un puerto (ver `cmd/api/router/router.go`).
+
+Pasos:
+
+1) En Vercel Dashboard → Project → Settings → Environment Variables, configura:
+
+- `DB_DRIVER` (`mysql` o `postgres`)
+- `CONNECTION_STRING` (un DSN remoto; no uses `127.0.0.1`)
+- `TABLE_NAME`
+
+2) Despliega.
+
+Nota de implementación:
+
+- El build de Go en Vercel envuelve la función, lo cual vuelve incómodas las reglas de import de `internal/` en este contexto. Por eso, el código reutilizable también está disponible en `pkg/`.
 
 ## API (tal como está implementada)
 
