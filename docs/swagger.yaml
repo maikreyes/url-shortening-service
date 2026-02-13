@@ -44,6 +44,78 @@ info:
   title: URL Shortening Service API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica un usuario y retorna un token JWT (también se setea cookie
+        `access_token`).
+      parameters:
+      - description: Credenciales
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registra un usuario.
+      parameters:
+      - description: Datos de registro
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register
+      tags:
+      - auth
   /{code}:
     get:
       description: Redirige (301) al destino asociado al código.
@@ -316,78 +388,6 @@ paths:
       summary: Listar URLs del usuario
       tags:
       - urls
-  /login:
-    post:
-      consumes:
-      - application/json
-      description: Autentica un usuario y retorna un token JWT (también se setea cookie
-        `access_token`).
-      parameters:
-      - description: Credenciales
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/domain.LoginInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Login
-      tags:
-      - auth
-  /register:
-    post:
-      consumes:
-      - application/json
-      description: Registra un usuario.
-      parameters:
-      - description: Datos de registro
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/domain.RegisterInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Register
-      tags:
-      - auth
 schemes:
 - http
 - https
