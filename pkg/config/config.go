@@ -7,7 +7,8 @@ type Config struct {
 	Driver      string
 	Host        string
 	Port        string
-	Table       string
+	UrlTable    string
+	UserTable   string
 	Environment string
 }
 
@@ -17,7 +18,8 @@ func LoadConfig() *Config {
 		Driver:      os.Getenv("DB_DRIVER"),
 		Host:        os.Getenv("HOST"),
 		Port:        os.Getenv("PORT"),
-		Table:       os.Getenv("TABLE_NAME"),
+		UrlTable:    os.Getenv("URL_TABLE_NAME"),
+		UserTable:   os.Getenv("USER_TABLE_NAME"),
 		Environment: os.Getenv("ENVIRONMENT"),
 	}
 }

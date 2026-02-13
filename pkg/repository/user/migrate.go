@@ -1,4 +1,4 @@
-package url
+package user
 
 import (
 	"strings"
@@ -15,7 +15,7 @@ func (r *Repository) Migrate() {
 		return
 	}
 
-	if err := r.DB.Table(table).AutoMigrate(&domain.ApiResponse{}); err != nil {
+	if err := r.DB.Table(table).AutoMigrate(&domain.User{}); err != nil {
 		panic(err)
 	}
 

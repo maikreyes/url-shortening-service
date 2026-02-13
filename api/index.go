@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"sync"
 
 	githubHandler "url-shortening-service/cmd/api/Handler/Github"
 	urlsHandler "url-shortening-service/cmd/api/Handler/urls"
+	userHandler "url-shortening-service/cmd/api/Handler/user"
 	"url-shortening-service/cmd/api/router"
 	"url-shortening-service/pkg/config"
 	repo "url-shortening-service/pkg/repository/url"
+	userepo "url-shortening-service/pkg/repository/user"
 	githubService "url-shortening-service/pkg/service/github"
 	urlService "url-shortening-service/pkg/service/url"
+	userService "url-shortening-service/pkg/service/user"
 )
 
 var (
@@ -32,22 +34,6 @@ func initServer() {
 
 	ctg := config.LoadConfig()
 
-	if strings.TrimSpace(ctg.Driver) == "" {
-		initErr = fmt.Errorf("missing env var DB_DRIVER")
-		log.Printf("[vercel] initServer error: %v", initErr)
-		return
-	}
-	if strings.TrimSpace(ctg.DSN) == "" {
-		initErr = fmt.Errorf("missing env var CONNECTION_STRING")
-		log.Printf("[vercel] initServer error: %v", initErr)
-		return
-	}
-	if strings.TrimSpace(ctg.Table) == "" {
-		initErr = fmt.Errorf("missing env var TABLE_NAME")
-		log.Printf("[vercel] initServer error: %v", initErr)
-		return
-	}
-
 	db, err := repo.Connection(ctg.DSN, ctg.Driver)
 	if err != nil {
 		initErr = err
@@ -55,8 +41,10 @@ func initServer() {
 		return
 	}
 
-	repository := repo.NewRepository(db, ctg.Table)
+	repository := repo.NewRepository(db, ctg.UrlTable)
 	repository.Migrate()
+
+	userRepository := userepo.NewRepository(db, ctg.UserTable)
 
 	urlSvc := urlService.NewService(repository)
 	urlH := urlsHandler.NewHandler(urlSvc, ctg.Host)
@@ -64,7 +52,10 @@ func initServer() {
 	ghSvc := githubService.NewService(repository)
 	ghH := githubHandler.NewHandler(ghSvc)
 
-	engine = router.BuildRouter(urlH, ghH)
+	usrSvc := userService.NewService(userRepository)
+	usrH := userHandler.NewHandler(usrSvc, ctg.Host)
+
+	engine = router.BuildRouter(urlH, ghH, usrH)
 }
 
 // Handler es el entrypoint que Vercel invoca.
