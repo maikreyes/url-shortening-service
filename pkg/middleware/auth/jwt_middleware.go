@@ -10,7 +10,13 @@ import (
 func JWTMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		autoHeader := ctx.GetHeader("Authorization")
+		autoHeader, err := ctx.Cookie("access_token")
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"error": "error to try obtenin cookie",
+			})
+		}
 
 		if autoHeader == "" {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -22,7 +28,7 @@ func JWTMiddleware() gin.HandlerFunc {
 
 		tokestring := strings.TrimPrefix(autoHeader, "Bearer ")
 
-		err := ValidateToken(tokestring)
+		err = ValidateToken(tokestring)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"error": "invalid token",

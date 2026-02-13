@@ -7,6 +7,7 @@ import (
 	handler "url-shortening-service/cmd/api/Handler/urls"
 	user "url-shortening-service/cmd/api/Handler/user"
 	"url-shortening-service/pkg/middleware/auth"
+	"url-shortening-service/pkg/middleware/cors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +22,12 @@ func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanl
 
 func BuildRouter(handler *handler.Handler, GithubHandler *github.Hanlder, userHandler *user.Handler) *gin.Engine {
 	r := gin.Default()
+	r.Use(cors.CORSMiddleware())
+
+	// Catch-all para preflight requests.
+	r.OPTIONS("/*path", func(ctx *gin.Context) {
+		ctx.Status(http.StatusNoContent)
+	})
 
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
