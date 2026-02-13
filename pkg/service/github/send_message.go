@@ -7,7 +7,7 @@ func (s *Service) SendMessage(event, code string, githubPayload domain.GithubPay
 	webhook, err := s.Repository.FetchData(code)
 
 	discordPayload := domain.DiscordPayload{
-		Username:  "Archives Bot",
+		Username:  "Informante Moik",
 		AvatarUrl: "https://ysqz0oydi7thsqmt.public.blob.vercel-storage.com/moik%202.png",
 	}
 
