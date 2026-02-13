@@ -9,7 +9,7 @@ import (
 
 func (h *Handler) Redirect(ctx *gin.Context) {
 	code := ctx.Param("code")
-	data, err := h.Service.GetShortUrl(code)
+	data, err := h.UrlService.GetShortUrl(code)
 
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
@@ -26,7 +26,7 @@ func (h *Handler) Redirect(ctx *gin.Context) {
 		return
 	}
 
-	err = h.Service.AddCount(*data)
+	err = h.UrlService.AddCount(*data)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{

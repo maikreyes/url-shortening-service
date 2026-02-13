@@ -10,7 +10,27 @@ func (h *Handler) PutData(ctx *gin.Context) {
 	code := ctx.Param("code")
 	url := ctx.GetHeader("url")
 
-	newCode, err := h.Service.UpdateShortUrl(code, url)
+	usernameVal, exist := ctx.Get("email")
+
+	if !exist {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "unautorized request",
+		})
+		return
+	}
+
+	username := usernameVal.(string)
+
+	u, err := h.UserService.GetUserInformation(username)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	newCode, err := h.UrlService.UpdateShortUrl(code, u.Username, url)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{

@@ -47,20 +47,18 @@ func initServer() {
 	userRepository := userepo.NewRepository(db, ctg.UserTable)
 	userRepository.Migrate()
 
-	urlSvc := urlService.NewService(repository)
-	urlH := urlsHandler.NewHandler(urlSvc, ctg.Host)
-
 	ghSvc := githubService.NewService(repository)
 	ghH := githubHandler.NewHandler(ghSvc)
 
 	usrSvc := userService.NewService(userRepository)
 	usrH := userHandler.NewHandler(usrSvc, ctg.Host)
 
+	urlSvc := urlService.NewService(repository)
+	urlH := urlsHandler.NewHandler(urlSvc, usrSvc, ctg.Host)
+
 	engine = router.BuildRouter(urlH, ghH, usrH)
 }
 
-// Handler es el entrypoint que Vercel invoca.
-// Con el rewrite configurado como `/api?path=/<ruta_original>`, reconstruimos el path.
 func Handler(w http.ResponseWriter, r *http.Request) {
 	initOnce.Do(initServer)
 

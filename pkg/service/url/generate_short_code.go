@@ -4,9 +4,10 @@ import (
 	"crypto/sha256"
 )
 
-func (s *Service) GenerateShortCode(url string) string {
-
-	h := sha256.Sum256([]byte(url))
+func (s *Service) GenerateShortCode(url, username string) string {
+	// Debe variar por usuario para permitir que varios usuarios acorten la misma URL
+	// sin colisionar en el índice único de short_code.
+	h := sha256.Sum256([]byte(url + "|" + username))
 
 	const base62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const length = 7

@@ -3,6 +3,8 @@ package user
 import (
 	"time"
 	"url-shortening-service/pkg/domain"
+
+	"github.com/google/uuid"
 )
 
 func (r *Repository) PostUser(user domain.RegisterInput) error {
@@ -15,6 +17,10 @@ func (r *Repository) PostUser(user domain.RegisterInput) error {
 		Active:    true,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+	}
+
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
 	}
 
 	err := r.DB.Table(r.TableName).Create(&u).Error

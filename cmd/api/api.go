@@ -29,14 +29,14 @@ func Run() {
 	userRepo := userepo.NewRepository(db, ctg.UserTable)
 	userRepo.Migrate()
 
-	service := service.NewService(repository)
-	handler := handler.NewHandler(service, ctg.Host)
-
 	githubService := githubService.NewService(repository)
 	GithubHandler := github.NewHandler(githubService)
 
 	userService := userService.NewService(userRepo)
 	userhandler := user.NewHandler(userService, ctg.Host)
+
+	service := service.NewService(repository)
+	handler := handler.NewHandler(service, userService, ctg.Host)
 
 	var addr string
 

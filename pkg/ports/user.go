@@ -7,6 +7,7 @@ type UserRepository interface {
 	PostUser(user domain.RegisterInput) error
 	PutUser(username string, user domain.RegisterInput) error
 	DeleteUser(username string) error
+	GetUserInformation(username string) (*domain.User, error)
 }
 
 type UserService interface {
@@ -15,4 +16,5 @@ type UserService interface {
 	PostUser(user domain.RegisterInput) error
 	PutUser(username string, user domain.RegisterInput) error
 	DeleteUser(usernname string) error
+	GetUserInformation(username string) (*domain.User, error)
 }

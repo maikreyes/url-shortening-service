@@ -9,7 +9,7 @@ import (
 func (h *Handler) GetStats(ctx *gin.Context) {
 
 	code := ctx.Param("code")
-	data, err := h.Service.GetShortUrl(code)
+	data, err := h.UrlService.GetShortUrl(code)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"message": "code not found",

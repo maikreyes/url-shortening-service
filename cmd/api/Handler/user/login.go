@@ -57,13 +57,15 @@ func (h *Handler) Login(ctx *gin.Context) {
 
 	ctx.SetCookie(
 		"access_token",
-		token,
+		token.Token,
 		3600,
 		"/",
-		h.Host,
-		true,
+		"",
+		ctx.Request.TLS != nil,
 		true,
 	)
+
+	ctx.Set("email", token.Email)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,

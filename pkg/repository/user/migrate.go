@@ -12,13 +12,17 @@ func (r *Repository) Migrate() {
 		panic("TABLE_NAME is required")
 	}
 
+	if r.DB == nil {
+		panic("DB connection is nil")
+	}
+
 	log.Println("[USER_REPOSITORY] Migrating user table...")
 
-	if r.DB.Migrator().HasTable(table) {
+	if r.DB.Migrator().HasTable(&domain.User{}) {
 		return
 	}
 
-	if err := r.DB.Table(table).AutoMigrate(&domain.User{}); err != nil {
+	if err := r.DB.AutoMigrate(&domain.User{}); err != nil {
 		panic(err)
 	}
 

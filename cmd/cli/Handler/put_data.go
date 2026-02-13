@@ -4,7 +4,7 @@ import "fmt"
 
 func (h *Handler) PutData(code string, url string) error {
 
-	newCode, err := h.service.UpdateShortUrl(code, url)
+	newCode, err := h.service.UpdateShortUrl(code, "", url)
 
 	if err != nil {
 		return err

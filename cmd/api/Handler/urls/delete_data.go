@@ -8,7 +8,7 @@ import (
 
 func (h *Handler) DeleteData(ctx *gin.Context) {
 	code := ctx.Param("code")
-	err := h.Service.DeleteShortUrl(code)
+	err := h.UrlService.DeleteShortUrl(code)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"message": "code not found",

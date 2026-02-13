@@ -13,6 +13,15 @@ func (h *Handler) PostData(ctx *gin.Context) {
 	rawURL := strings.TrimSpace(ctx.GetHeader("url"))
 	webhookHeader := strings.TrimSpace(ctx.GetHeader("webhook"))
 
+	usernameVal, exist := ctx.Get("email")
+
+	if !exist {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "unautorized request",
+		})
+		return
+	}
+
 	isWebhook := false
 
 	if webhookHeader != "" {
@@ -33,7 +42,19 @@ func (h *Handler) PostData(ctx *gin.Context) {
 		return
 	}
 
-	code, err := h.Service.CreateShortUrl(rawURL)
+	username := usernameVal.(string)
+
+	u, err := h.UserService.GetUserInformation(username)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	code, err := h.UrlService.CreateShortUrl(rawURL, u.Username, isWebhook, u.ID)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "could not create short url",

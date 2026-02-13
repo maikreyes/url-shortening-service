@@ -9,10 +9,29 @@ import (
 
 func (h *Handler) GetData(ctx *gin.Context) {
 	code := ctx.Param("code")
-	data, err := h.Service.GetShortUrl(code)
+	usernameVal, exist := ctx.Get("email")
+
+	if !exist {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "unautorized request",
+		})
+		return
+	}
+
+	data, err := h.UrlService.GetShortUrl(code)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"message": "code not found",
+		})
+		return
+	}
+	username := usernameVal.(string)
+
+	u, err := h.UserService.GetUserInformation(username)
+
+	if data.UserID != u.ID {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "this user don't have this url",
 		})
 		return
 	}

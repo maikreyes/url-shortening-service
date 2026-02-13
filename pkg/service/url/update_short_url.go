@@ -1,14 +1,29 @@
 package url
 
-func (s *Service) UpdateShortUrl(shortCode string, newUrl string) (string, error) {
+import "fmt"
+
+func (s *Service) UpdateShortUrl(shortCode, username string, newUrl string) (string, error) {
 	normalized := normalizeURL(newUrl)
-	newShort := s.GenerateShortCode(normalized)
 
-	err := s.Repo.PutData(shortCode, normalized, newShort)
+	const maxAttempts = 6
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		userSalt := username
+		if attempt > 0 {
+			userSalt = fmt.Sprintf("%s#%d", username, attempt)
+		}
+		newShort := s.GenerateShortCode(normalized, userSalt)
 
-	if err != nil {
+		err := s.Repo.PutData(shortCode, normalized, newShort)
+		if err == nil {
+			return newShort, nil
+		}
+
+		if isDuplicateShortCodeError(err) {
+			continue
+		}
+
 		return "", err
 	}
 
-	return newShort, nil
+	return "", fmt.Errorf("could not generate unique short code")
 }

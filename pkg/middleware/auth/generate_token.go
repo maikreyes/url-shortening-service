@@ -2,11 +2,12 @@ package auth
 
 import (
 	"time"
+	"url-shortening-service/pkg/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(userName, password string) (string, error) {
+func GenerateToken(userEmail, password string) (domain.TokenResponse, error) {
 
 	ctg := LoadJWTCtg()
 
@@ -14,16 +15,22 @@ func GenerateToken(userName, password string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"username": userName,
-			"exp":      time.Now().Add(time.Hour * 24).Unix(),
+			"email": userEmail,
+			"exp":   time.Now().Add(time.Hour * 24).Unix(),
 		})
 
 	tokenString, err := token.SignedString(secret)
 
+	Claims := token.Claims.(jwt.MapClaims)
+	uName := Claims["email"].(string)
+
 	if err != nil {
-		return "", err
+		return domain.TokenResponse{}, err
 	}
 
-	return tokenString, nil
+	return domain.TokenResponse{
+		Token: tokenString,
+		Email: uName,
+	}, nil
 
 }

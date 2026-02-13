@@ -11,11 +11,15 @@ func (r *Repository) Migrate() {
 		panic("TABLE_NAME is required")
 	}
 
-	if r.DB.Migrator().HasTable(table) {
+	if r.DB == nil {
+		panic("DB connection is nil")
+	}
+
+	if r.DB.Migrator().HasTable(&domain.ApiResponse{}) {
 		return
 	}
 
-	if err := r.DB.Table(table).AutoMigrate(&domain.ApiResponse{}); err != nil {
+	if err := r.DB.AutoMigrate(&domain.ApiResponse{}); err != nil {
 		panic(err)
 	}
 

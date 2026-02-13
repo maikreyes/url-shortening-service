@@ -3,13 +3,15 @@ package handler
 import "url-shortening-service/pkg/ports"
 
 type Handler struct {
-	Service ports.UrlService
-	Host    string
+	UrlService  ports.UrlService
+	UserService ports.UserService
+	Host        string
 }
 
-func NewHandler(service ports.UrlService, host string) *Handler {
+func NewHandler(urlService ports.UrlService, userService ports.UserService, host string) *Handler {
 	return &Handler{
-		Service: service,
-		Host:    host,
+		UrlService:  urlService,
+		UserService: userService,
+		Host:        host,
 	}
 }
