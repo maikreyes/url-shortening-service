@@ -15,7 +15,12 @@ import (
 func (h *Hanlder) WebHookHandler(ctx *gin.Context) {
 
 	code := ctx.Param("code")
+	avatarUrl := strings.TrimSpace(ctx.GetHeader("avatarUrl"))
 	event := strings.TrimSpace(ctx.GetHeader("X-GitHub-Event"))
+
+	if avatarUrl != "" {
+		avatarUrl = "https://ysqz0oydi7thsqmt.public.blob.vercel-storage.com/moik%202.png"
+	}
 
 	body, err := ctx.GetRawData()
 
@@ -35,7 +40,7 @@ func (h *Hanlder) WebHookHandler(ctx *gin.Context) {
 		return
 	}
 
-	send, err := h.Service.SendMessage(event, code, GithubPayload)
+	send, err := h.Service.SendMessage(event, avatarUrl, code, GithubPayload)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
