@@ -8,7 +8,7 @@ func (s *Service) SendMessage(event, code string, githubPayload domain.GithubPay
 
 	discordPayload := domain.DiscordPayload{
 		Username:  "Archives Bot",
-		AvatarUrl: "https://avatars.githubusercontent.com/u/191653228?s=96&v=4",
+		AvatarUrl: "https://ysqz0oydi7thsqmt.public.blob.vercel-storage.com/moik%202.png",
 	}
 
 	if err != nil {
