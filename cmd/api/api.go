@@ -24,10 +24,10 @@ func Run() {
 	}
 
 	repository := repo.NewRepository(db, ctg.UrlTable)
-	repository.Migrate()
-
 	userRepo := userepo.NewRepository(db, ctg.UserTable)
 	userRepo.Migrate()
+
+	repository.Migrate()
 
 	githubService := githubService.NewService(repository)
 	GithubHandler := github.NewHandler(githubService)

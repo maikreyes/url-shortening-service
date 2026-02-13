@@ -41,11 +41,11 @@ func initServer() {
 		return
 	}
 
-	repository := repo.NewRepository(db, ctg.UrlTable)
-	repository.Migrate()
-
 	userRepository := userepo.NewRepository(db, ctg.UserTable)
 	userRepository.Migrate()
+
+	repository := repo.NewRepository(db, ctg.UrlTable)
+	repository.Migrate()
 
 	ghSvc := githubService.NewService(repository)
 	ghH := githubHandler.NewHandler(ghSvc)
