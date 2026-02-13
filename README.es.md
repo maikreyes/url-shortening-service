@@ -126,16 +126,20 @@ Ejemplo (según el enunciado del reto):
 
 Implementado:
 
-- Crear / obtener / actualizar / eliminar URLs cortas
+- Registro y login de usuarios (JWT)
+- Crear / obtener / actualizar / eliminar URLs cortas (protegido por JWT)
 - Redirección desde un código corto hacia la URL original
 - Contador de accesos (incrementa `accessCount` al redirigir)
 - Endpoint de estadísticas (`/api/v2/shorten/:code/stats`) que retorna `accessCount`
+- Listado de URLs por usuario (`/api/v3/:username/urls`) (protegido por JWT)
 - Endpoint webhook de GitHub que reenvía eventos de GitHub hacia Discord (usando una URL de webhook de Discord almacenada)
+- Swagger UI en `/swagger/*any`
 
 Diferencias de comportamiento vs. el reto:
 
-- La API CRUD está montada bajo `/api/v1` (no en la raíz)
+- La API CRUD está montada bajo `/api/v1` y requiere JWT (no en la raíz)
 - Crear/actualizar reciben la URL vía un header HTTP llamado `url` (no JSON)
+- Crear responde con una URL compuesta `{ "url": "<HOST>/<code>" }` (no el recurso completo)
 - Eliminar devuelve `200 OK` con un mensaje (el reto espera `204 No Content`)
 
 ## Stack tecnológico
@@ -151,9 +155,11 @@ Variables de entorno (ver `.env`):
 
 - `CONNECTION_STRING`: DSN para el driver seleccionado
 - `DB_DRIVER`: driver de base de datos (`mysql` o `postgres`)
-- `HOST`: host del servidor (ej. `localhost`)
-- `PORT`: puerto del servidor (ej. `8080`)
-- `TABLE_NAME`: tabla usada por el repositorio (por defecto en este repo: `api_responses`)
+- `HOST`: host/dirección usada para construir las URLs cortas retornadas (ej. `localhost:8080` o `tu-app.vercel.app`)
+- `PORT`: puerto usado al ejecutar la API localmente (ej. `8080`)
+- `URL_TABLE_NAME`: nombre de la tabla de URLs (requerido)
+- `USER_TABLE_NAME`: nombre de la tabla de usuarios (requerido)
+- `JWT_SECRET`: secreto HMAC para firmar/validar JWT (requerido para `/login` y cualquier ruta `/api/*`)
 - `ENVIRONMENT`: usa `production` para defaults más amigables a producción
 
 Notas:
@@ -166,9 +172,11 @@ Ejemplo (MySQL):
 ```dotenv
 DB_DRIVER="mysql"
 CONNECTION_STRING="user:pass@tcp(127.0.0.1:3306)/UrlShorteningService?parseTime=true"
-HOST="localhost"
+HOST="localhost:8080"
 PORT="8080"
-TABLE_NAME="api_responses"
+URL_TABLE_NAME="api_responses"
+USER_TABLE_NAME="users"
+JWT_SECRET="change-me"
 ```
 
 Ejemplo (Postgres):
@@ -176,16 +184,18 @@ Ejemplo (Postgres):
 ```dotenv
 DB_DRIVER="postgres"
 CONNECTION_STRING="host=127.0.0.1 user=postgres password=postgres dbname=UrlShorteningService port=5432 sslmode=disable"
-HOST="localhost"
+HOST="localhost:8080"
 PORT="8080"
-TABLE_NAME="api_responses"
+URL_TABLE_NAME="api_responses"
+USER_TABLE_NAME="users"
+JWT_SECRET="change-me"
 ```
 
 ## Inicio rápido
 
-1) Inicia MySQL o Postgres (y crea la base de datos si hace falta).
-2) Configura `.env`.
-3) Ejecuta la API:
+1. Inicia MySQL o Postgres (y crea la base de datos si hace falta).
+1. Configura `.env`.
+1. Ejecuta la API:
 
 ```bash
 go run ./cmd api
@@ -196,7 +206,8 @@ El servicio inicia en `http://HOST:PORT` y realiza una migración básica al arr
 Notas:
 
 - `DB_DRIVER` es requerido (`mysql` o `postgres`).
-- `TABLE_NAME` es requerido. La migración crea la tabla especificada por `TABLE_NAME` si no existe.
+- `URL_TABLE_NAME` y `USER_TABLE_NAME` son requeridos. La migración crea esas tablas si no existen.
+- `JWT_SECRET` es requerido para emitir/validar JWT.
 
 ## Deploy en Vercel
 
@@ -210,13 +221,15 @@ Cómo funciona:
 
 Pasos:
 
-1) En Vercel Dashboard → Project → Settings → Environment Variables, configura:
+1. En Vercel Dashboard → Project → Settings → Environment Variables, configura:
 
 - `DB_DRIVER` (`mysql` o `postgres`)
 - `CONNECTION_STRING` (un DSN remoto; no uses `127.0.0.1`)
-- `TABLE_NAME`
+- `URL_TABLE_NAME`
+- `USER_TABLE_NAME`
+- `JWT_SECRET`
 
-2) Despliega.
+1. Despliega.
 
 Nota de implementación:
 
@@ -226,55 +239,89 @@ Nota de implementación:
 
 Base:
 
-- Endpoints CRUD: `/api/v1`
-- Endpoint de redirección: `/` (raíz)
-- Endpoint de relay de webhook GitHub: `/` (raíz)
+- Swagger UI: `/swagger/*any`
+- Endpoints públicos: `/`, `/:code`, `/:code/webhook`, `/login`, `/register`
+- Endpoints protegidos por JWT: `/api/*`
+
+Nota: los paths en este README son relativos al host (por ejemplo, `http://localhost:8080`).
 
 ### Redirección
 
 - `GET /:code` → redirige a la URL original (HTTP `301 Moved Permanently`) e incrementa `accessCount`.
   Nota: `301` puede quedar en caché en el navegador; para probar múltiples accesos, usa `curl` o una ventana privada.
 
-### Health
+### Bienvenida
 
-- `GET /api/v1/` → retorna un JSON simple.
+- `GET /` → retorna un JSON simple.
+
+### Auth
+
+- `POST /register` → registra un usuario.
+  - Body (JSON): `{ "username": "...", "email": "...", "password": "..." }`
+  - Respuesta: `201 Created` (nota: la implementación actual retorna el password en claro).
+
+- `POST /login` → autentica y retorna un JWT (también setea cookie `access_token`).
+  - Body (JSON): `{ "email": "...", "password": "..." }`
+  - Respuesta: `200 OK` con `{ "token": { "token": "<jwt>", "email": "<email>" } }`
+
+Puedes enviar el JWT como:
+
+- `Authorization: Bearer <token>`
+- Cookie `access_token=<token>`
 
 ### CRUD
 
 - `POST /api/v1/shorten`
+  - Requiere JWT
   - Entrada: Header `url: <url>`
   - Opcional: Header `webhook: true|false`
-  - Salida: `201 Created` con `{ "url": "<shortCode>" }`
-  - Si `webhook: true`, la respuesta se convierte en `{ "url": "<shortCode>/webhook" }`
-    (nota: es un sufijo de ruta, no una URL completamente calificada).
+  - Salida: `201 Created` con `{ "url": "<HOST>/<shortCode>" }`
+  - Si `webhook: true`, la respuesta se convierte en `{ "url": "<HOST>/<shortCode>/webhook" }`
   - Nota: si `webhook` está presente, debe ser un boolean válido (`true`/`false`).
 
 - `GET /api/v1/shorten/:code`
-  - Salida: `200 OK` con `{ id, url, shortCode, createdAt, updatedAt }`
+  - Requiere JWT
+  - Salida: `200 OK` con `{ ID, url, shortCode, createdAt, updatedAt }`
+  - Nota: valida que el recurso pertenezca al usuario autenticado.
 
 - `PUT /api/v1/shorten/:code`
+  - Requiere JWT
   - Entrada: Header `url: <new_url>`
   - Salida: `200 OK` con un mensaje que contiene el nuevo short code
-  - Nota: la implementación actual no valida que `:code` existiera antes de actualizar.
+  - Nota: la implementación actual no valida ownership para actualizar.
 
 - `DELETE /api/v1/shorten/:code`
+  - Requiere JWT
   - Salida: `200 OK` con un mensaje
-  - Nota: la implementación actual no valida que `:code` existiera antes de eliminar.
+  - Nota: la implementación actual no valida ownership para eliminar.
+
+### Estadísticas
+
+- `GET /api/v2/shorten/:code/stats`
+  - Requiere JWT
+  - Salida: `200 OK` con el recurso almacenado incluyendo `accessCount`.
+
+### URLs por usuario
+
+- `GET /api/v3/:username/urls`
+  - Requiere JWT
+  - `:username` debe coincidir con el usuario autenticado.
 
 ### Relay webhook GitHub → Discord
 
 Este repo incluye un relay simple:
 
-1) Guarda una URL de webhook de Discord creando un short code con `webhook: true`.
-2) GitHub envía eventos a `POST /:code/webhook`.
-3) El servicio convierte el evento de GitHub en un embed de Discord y lo publica en el webhook de Discord guardado.
+1. Guarda una URL de webhook de Discord creando un short code con `webhook: true`.
+1. GitHub envía eventos a `POST /:code/webhook`.
+1. El servicio convierte el evento de GitHub en un embed de Discord y lo publica en el webhook de Discord guardado.
 
 Endpoint:
 
 - `POST /:code/webhook`
   - Requiere header: `X-GitHub-Event: <event>`
+  - Headers opcionales: `avatarUrl`, `informanteName`
   - Body: payload JSON de GitHub
-  - Respuesta: `200 OK` con `{ "status": "sent" }` (o un JSON de error)
+  - Respuesta: `200 OK` con `{ "status": "sent", "avatar": "..." }` (o un JSON de error)
 
 Eventos soportados (`X-GitHub-Event`):
 
@@ -286,10 +333,29 @@ Eventos soportados (`X-GitHub-Event`):
 
 ## Ejemplos (cURL)
 
+Registrar:
+
+```bash
+curl -i -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"demo","email":"demo@example.com","password":"secret123"}' \
+  http://localhost:8080/register
+```
+
+Login (copia el token de la respuesta, o usa la cookie `access_token`):
+
+```bash
+curl -i -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"demo@example.com","password":"secret123"}' \
+  http://localhost:8080/login
+```
+
 Crear:
 
 ```bash
 curl -i -X POST \
+  -H 'Authorization: Bearer <token>' \
   -H 'url: https://www.example.com/some/long/url' \
   http://localhost:8080/api/v1/shorten
 ```
@@ -298,6 +364,7 @@ Crear un relay de webhook GitHub (guardar una URL de webhook de Discord):
 
 ```bash
 curl -i -X POST \
+  -H 'Authorization: Bearer <token>' \
   -H 'url: https://discord.com/api/webhooks/XXX/YYY' \
   -H 'webhook: true' \
   http://localhost:8080/api/v1/shorten
@@ -310,7 +377,9 @@ Luego configura GitHub para enviar webhooks a:
 Obtener:
 
 ```bash
-curl -i http://localhost:8080/api/v1/shorten/abc123
+curl -i \
+  -H 'Authorization: Bearer <token>' \
+  http://localhost:8080/api/v1/shorten/abc123
 ```
 
 Redirección:
@@ -322,7 +391,9 @@ curl -i http://localhost:8080/abc123
 Estadísticas:
 
 ```bash
-curl -i http://localhost:8080/api/v2/shorten/abc123/stats
+curl -i \
+  -H 'Authorization: Bearer <token>' \
+  http://localhost:8080/api/v2/shorten/abc123/stats
 ```
 
 Probar manualmente el endpoint webhook (ejemplo de evento `ping`):
@@ -339,6 +410,7 @@ Actualizar:
 
 ```bash
 curl -i -X PUT \
+  -H 'Authorization: Bearer <token>' \
   -H 'url: https://www.example.com/some/updated/url' \
   http://localhost:8080/api/v1/shorten/abc123
 ```
@@ -346,7 +418,17 @@ curl -i -X PUT \
 Eliminar:
 
 ```bash
-curl -i -X DELETE http://localhost:8080/api/v1/shorten/abc123
+curl -i -X DELETE \
+  -H 'Authorization: Bearer <token>' \
+  http://localhost:8080/api/v1/shorten/abc123
+```
+
+Listar URLs de un usuario:
+
+```bash
+curl -i \
+  -H 'Authorization: Bearer <token>' \
+  http://localhost:8080/api/v3/demo/urls
 ```
 
 ## CLI
@@ -362,8 +444,8 @@ go run ./cmd cli delete -code abc123
 
 ## Notas
 
-- La generación del short code es determinística (SHA-256 + Base62, longitud 7). La misma URL normalizada produce el mismo short code.
+- La generación del short code es determinística por usuario (SHA-256 + Base62, longitud 7) e incluye el username como “salt”.
 - La normalización de URL agrega `https://` cuando falta el esquema.
 - Al redirigir, si la URL guardada no tiene esquema, el servidor asume `https://`.
-- La tabla usada por el repositorio se configura vía `TABLE_NAME` (el `.env` por defecto usa `api_responses`). `TABLE_NAME` es requerido.
+- Las tablas se configuran vía `URL_TABLE_NAME` y `USER_TABLE_NAME`.
 - El driver de base de datos se selecciona vía `DB_DRIVER` (`mysql` o `postgres`).
