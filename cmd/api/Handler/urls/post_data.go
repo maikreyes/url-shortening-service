@@ -8,8 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PostData godoc
+// @Summary Crear short URL
+// @Description Crea una URL corta. La URL original se envía en el header `url`. Opcional: header `webhook` boolean.
+// @Tags urls
+// @Produce json
+// @Param Authorization header string false "Bearer <token>"
+// @Param url header string true "URL original"
+// @Param webhook header boolean false "Habilitar webhook"
+// @Success 201 {object} map[string]string
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Security BearerAuth
+// @Router /api/v1/shorten [post]
 func (h *Handler) PostData(ctx *gin.Context) {
-
 	rawURL := strings.TrimSpace(ctx.GetHeader("url"))
 	webhookHeader := strings.TrimSpace(ctx.GetHeader("webhook"))
 

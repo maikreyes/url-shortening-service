@@ -10,6 +10,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login godoc
+// @Summary Login
+// @Description Autentica un usuario y retorna un token JWT (también se setea cookie `access_token`).
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param payload body domain.LoginInput true "Credenciales"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /login [post]
 func (h *Handler) Login(ctx *gin.Context) {
 
 	var user domain.LoginInput

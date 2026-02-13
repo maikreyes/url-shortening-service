@@ -7,8 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Register godoc
+// @Summary Register
+// @Description Registra un usuario.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param payload body domain.RegisterInput true "Datos de registro"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /register [post]
 func (h *Handler) Register(ctx *gin.Context) {
-
 	var input domain.RegisterInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {

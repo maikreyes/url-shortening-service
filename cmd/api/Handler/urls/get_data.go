@@ -7,6 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetData godoc
+// @Summary Obtener short URL
+// @Description Obtiene el recurso asociado a un código (requiere auth).
+// @Tags urls
+// @Produce json
+// @Param Authorization header string false "Bearer <token>"
+// @Param code path string true "Código corto"
+// @Success 200 {object} domain.ApiResponseWithotStats
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Security BearerAuth
+// @Router /api/v1/shorten/{code} [get]
 func (h *Handler) GetData(ctx *gin.Context) {
 	code := ctx.Param("code")
 	usernameVal, exist := ctx.Get("email")

@@ -7,6 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Redirect godoc
+// @Summary Redirigir por código
+// @Description Redirige (301) al destino asociado al código.
+// @Tags redirect
+// @Param code path string true "Código corto"
+// @Success 301 {string} string "Redirect"
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /{code} [get]
 func (h *Handler) Redirect(ctx *gin.Context) {
 	code := ctx.Param("code")
 	data, err := h.UrlService.GetShortUrl(code)

@@ -1,0 +1,399 @@
+basePath: /
+definitions:
+  domain.ApiResponseWithotStats:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      shortCode:
+        type: string
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  domain.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.RegisterInput:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+info:
+  contact: {}
+  description: API para acortar URLs, autenticar usuarios y consultar estadísticas.
+  title: URL Shortening Service API
+  version: "1.0"
+paths:
+  /{code}:
+    get:
+      description: Redirige (301) al destino asociado al código.
+      parameters:
+      - description: Código corto
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "301":
+          description: Redirect
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Redirigir por código
+      tags:
+      - redirect
+  /api/v1/shorten:
+    post:
+      description: 'Crea una URL corta. La URL original se envía en el header `url`.
+        Opcional: header `webhook` boolean.'
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        type: string
+      - description: URL original
+        in: header
+        name: url
+        required: true
+        type: string
+      - description: Habilitar webhook
+        in: header
+        name: webhook
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Crear short URL
+      tags:
+      - urls
+  /api/v1/shorten/{code}:
+    delete:
+      description: Elimina el recurso asociado al código.
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        type: string
+      - description: Código corto
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Eliminar short URL
+      tags:
+      - urls
+    get:
+      description: Obtiene el recurso asociado a un código (requiere auth).
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        type: string
+      - description: Código corto
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ApiResponseWithotStats'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener short URL
+      tags:
+      - urls
+    put:
+      description: Actualiza la URL original asociada al código. La nueva URL se envía
+        en el header `url`.
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        type: string
+      - description: Código corto
+        in: path
+        name: code
+        required: true
+        type: string
+      - description: Nueva URL
+        in: header
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Actualizar short URL
+      tags:
+      - urls
+  /api/v2/shorten/{code}/stats:
+    get:
+      description: Retorna el recurso con `accessCount`.
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        type: string
+      - description: Código corto
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener estadísticas
+      tags:
+      - stats
+  /api/v3/{username}/urls:
+    get:
+      description: Lista URLs del usuario (username en path debe coincidir con el
+        del token).
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        type: string
+      - description: Nombre de usuario
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Listar URLs del usuario
+      tags:
+      - urls
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica un usuario y retorna un token JWT (también se setea cookie
+        `access_token`).
+      parameters:
+      - description: Credenciales
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registra un usuario.
+      parameters:
+      - description: Datos de registro
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register
+      tags:
+      - auth
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

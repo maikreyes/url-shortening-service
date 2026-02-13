@@ -6,6 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetUserUrls godoc
+// @Summary Listar URLs del usuario
+// @Description Lista URLs del usuario (username en path debe coincidir con el del token).
+// @Tags urls
+// @Produce json
+// @Param Authorization header string false "Bearer <token>"
+// @Param username path string true "Nombre de usuario"
+// @Success 200 {array} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Security BearerAuth
+// @Router /api/v3/{username}/urls [get]
 func (h *Handler) GetUserUrls(ctx *gin.Context) {
 	username := ctx.Param("username")
 
