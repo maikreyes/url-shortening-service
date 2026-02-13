@@ -45,6 +45,7 @@ func initServer() {
 	repository.Migrate()
 
 	userRepository := userepo.NewRepository(db, ctg.UserTable)
+	userRepository.Migrate()
 
 	urlSvc := urlService.NewService(repository)
 	urlH := urlsHandler.NewHandler(urlSvc, ctg.Host)

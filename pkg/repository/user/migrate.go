@@ -1,6 +1,7 @@
 package user
 
 import (
+	"log"
 	"strings"
 	"url-shortening-service/pkg/domain"
 )
@@ -10,6 +11,8 @@ func (r *Repository) Migrate() {
 	if table == "" {
 		panic("TABLE_NAME is required")
 	}
+
+	log.Println("[USER_REPOSITORY] Migrating user table...")
 
 	if r.DB.Migrator().HasTable(table) {
 		return
