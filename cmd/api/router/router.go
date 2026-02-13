@@ -9,7 +9,11 @@ import (
 	"url-shortening-service/pkg/middleware/auth"
 	"url-shortening-service/pkg/middleware/cors"
 
+	_ "url-shortening-service/docs"
+
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanlder, userHanlder *user.Handler) {
@@ -23,6 +27,9 @@ func NewRouter(addr string, handler *handler.Handler, GithubHandler *github.Hanl
 func BuildRouter(handler *handler.Handler, GithubHandler *github.Hanlder, userHandler *user.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.CORSMiddleware())
+
+	// Swagger UI (no auth)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Catch-all para preflight requests.
 	r.OPTIONS("/*path", func(ctx *gin.Context) {
