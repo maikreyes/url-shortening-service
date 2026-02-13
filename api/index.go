@@ -59,7 +59,7 @@ func initServer() {
 	repository.Migrate()
 
 	urlSvc := urlService.NewService(repository)
-	urlH := urlsHandler.NewHandler(urlSvc)
+	urlH := urlsHandler.NewHandler(urlSvc, ctg.Host)
 
 	ghSvc := githubService.NewService(repository)
 	ghH := githubHandler.NewHandler(ghSvc)

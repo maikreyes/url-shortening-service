@@ -46,6 +46,6 @@ func (h *Handler) PostData(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"url": code,
+		"url": h.Host + "/" + code,
 	})
 }

@@ -24,7 +24,7 @@ func Run() {
 	repository.Migrate()
 
 	service := service.NewService(repository)
-	handler := handler.NewHandler(service)
+	handler := handler.NewHandler(service, ctg.Host)
 
 	githubService := githubService.NewService(repository)
 	GithubHandler := github.NewHandler(githubService)
