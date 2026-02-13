@@ -5,5 +5,5 @@ import (
 )
 
 type GithubService interface {
-	SendMessage(event, avatarUrl, code string, payload domain.GithubPayload) (domain.WebhookSend, error)
+	SendMessage(event, avatarUrl, informanteName, code string, payload domain.GithubPayload) (domain.WebhookSend, error)
 }

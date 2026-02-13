@@ -32,8 +32,7 @@ func Run() {
 	var addr string
 
 	if ctg.Environment == "production" {
-		// En producción normalmente el provider expone solo PORT.
-		// Si HOST viene vacío, escuchamos en todas las interfaces.
+
 		if ctg.Port != "" {
 			addr = ":" + ctg.Port
 		} else {

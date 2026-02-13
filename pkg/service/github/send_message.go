@@ -4,12 +4,12 @@ import (
 	"url-shortening-service/pkg/domain"
 )
 
-func (s *Service) SendMessage(event, avatarUrl, code string, githubPayload domain.GithubPayload) (domain.WebhookSend, error) {
+func (s *Service) SendMessage(event, avatarUrl, informanteName, code string, githubPayload domain.GithubPayload) (domain.WebhookSend, error) {
 
 	webhook, err := s.Repository.FetchData(code)
 
 	discordPayload := domain.DiscordPayload{
-		Username:  "Informante Moik",
+		Username:  "Informante " + informanteName,
 		AvatarUrl: avatarUrl,
 	}
 
